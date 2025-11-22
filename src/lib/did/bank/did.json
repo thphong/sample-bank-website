@@ -1,0 +1,19 @@
+{
+    "@context": "https://www.w3.org/ns/did/v1",
+    "id": "did:web:localhost:5173:did:bank",
+    "verificationMethod": [
+        {
+            "id": "did:web:localhost:5173:did:bank#keys-1",
+            "type": "Ed25519VerificationKey2020",
+            "controller": "did:web:localhost:5173:did:bank",
+            "publicKeyJwk": {
+                "kty": "OKP",
+                "crv": "Ed25519",
+                "x": "Yb-wJhqpAcZDgqDvi3FyA2i4LTt0m2TWjoAfUnzt7hM"
+            }
+        }
+    ],
+    "authentication": [
+        "did:web:localhost:5173:did:bank#keys-1"
+    ]
+}

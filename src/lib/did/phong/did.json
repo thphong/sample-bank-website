@@ -1,0 +1,19 @@
+{
+    "@context": "https://www.w3.org/ns/did/v1",
+    "id": "did:web:localhost:5173:did:phong",
+    "verificationMethod": [
+        {
+            "id": "did:web:localhost:5173:did:phong#keys-1",
+            "type": "Ed25519VerificationKey2020",
+            "controller": "did:web:localhost:5173:did:phong",
+            "publicKeyJwk": {
+                "kty": "OKP",
+                "crv": "Ed25519",
+                "x": "1g5Y6kxNACs6NZz55UUFdmdhrOttydY4MK6h2haBnuk"
+            }
+        }
+    ],
+    "authentication": [
+        "did:web:localhost:5173:did:phong#keys-1"
+    ]
+}

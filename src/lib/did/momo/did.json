@@ -1,0 +1,19 @@
+{
+    "@context": "https://www.w3.org/ns/did/v1",
+    "id": "did:web:localhost:5173:did:momo",
+    "verificationMethod": [
+        {
+            "id": "did:web:localhost:5173:did:momo#keys-1",
+            "type": "Ed25519VerificationKey2020",
+            "controller": "did:web:localhost:5173:did:momo",
+            "publicKeyJwk": {
+                "kty": "OKP",
+                "crv": "Ed25519",
+                "x": "JmGej73Eszl4tyQHLhGqKwY4ToufkjWnCGppx3_kkVc"
+            }
+        }
+    ],
+    "authentication": [
+        "did:web:localhost:5173:did:momo#keys-1"
+    ]
+}
