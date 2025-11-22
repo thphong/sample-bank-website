@@ -1,5 +1,6 @@
 <script lang="ts">
   import favicon from "$lib/assets/favicon.svg";
+  import { onMount, onDestroy } from "svelte";
 
   let { children } = $props();
 
@@ -27,6 +28,49 @@
     { icon: "🎁", label: "VCB Loyalty" },
     { icon: "🏷️", label: "Ưu đãi" },
   ];
+
+  const LOGIN_REQUEST = "SSI_WALLET_LOGIN_REQUEST";
+  const LOGIN_SUCCESS = "SSI_WALLET_LOGIN_SUCCESS";
+  const LOGIN_FAILED = "SSI_WALLET_LOGIN_FAILED";
+  const API_NONCE = "https://sample-bank-api.onrender.com/auth/nonce";
+  const API_TOKEN = "https://sample-bank-api.onrender.com/auth/access-token";
+
+  // Khi user bấm nút Đăng nhập trên web
+  function handleLoginClick() {
+    // Gửi message cho content-script của extension
+    console.log("[WEB] clicked login, sending postMessage");
+    window.postMessage(
+      {
+        source: "sample-bank-web",
+        type: LOGIN_REQUEST,
+        payload: {
+          api_nonce: API_NONCE,
+          api_token: API_TOKEN,
+        },
+      },
+      "*"
+    );
+  }
+
+  onMount(() => {
+    const handler = (event: MessageEvent) => {
+      const data = event.data;
+      if (!data || data.source !== "ssi-wallet") return;
+
+      if (data.type === LOGIN_SUCCESS) {
+        //accessToken = data.token;
+        console.log("Login success from extension", data);
+      }
+
+      if (data.type === LOGIN_FAILED) {
+        console.error("Login failed", data);
+        alert("Đăng nhập thất bại, vui lòng thử lại.");
+      }
+    };
+
+    window.addEventListener("message", handler);
+    onDestroy(() => window.removeEventListener("message", handler));
+  });
 </script>
 
 <svelte:head>
@@ -91,7 +135,8 @@
         {/each}
       </nav>
 
-      <button class="login-btn">
+      <!-- svelte-ignore event_directive_deprecated -->
+      <button class="login-btn" on:click={handleLoginClick}>
         <span class="login-icon">⮕</span>
         <span>Đăng nhập</span>
       </button>
@@ -104,8 +149,7 @@
     <div class="hero-overlay"></div>
 
     <div class="hero-content">
-      	  
-	  {@render children?.()}
+      {@render children?.()}
 
       <!-- Bottom white bar with quick actions -->
       <div class="quick-actions">
@@ -336,7 +380,7 @@
     display: flex;
     flex-direction: column;
     min-height: 480px;
-  }  
+  }
 
   .quick-actions {
     background: #ffffff;
@@ -444,8 +488,7 @@
     }
   }
 
-  @media (max-width: 640px) {   
-
+  @media (max-width: 640px) {
     .quick-actions {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       border-radius: 24px 24px 0 0;
