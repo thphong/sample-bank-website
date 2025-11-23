@@ -30,7 +30,7 @@
         console.log("Login success from extension", data);
       }
       else if (data.type === WALLET_REQUEST_TYPE.LOGIN_FAILED) {
-        console.error("Login failed from extension", data);
+        console.error("Login failed from extension", data.error);
         alert("Login failed from extension, please try again.");
       }
     };
