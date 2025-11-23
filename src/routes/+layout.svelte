@@ -1,51 +1,19 @@
 <script lang="ts">
   import favicon from "$lib/assets/favicon.svg";
   import { onMount, onDestroy } from "svelte";
-
+  import {navTabs, topMenu, mainMenu, quickActions, WALLET_REQUEST_TYPE, APIS} from "$lib/contant/enum";
   let { children } = $props();
-
-  const navTabs = ["Cá nhân", "Tổ chức", "Khách hàng Ưu tiên"];
-
-  const topMenu = [
-    "Về Samplebank",
-    "Tin tức",
-    "Nhà đầu tư",
-    "Mạng lưới",
-    "Tuyển dụng",
-  ];
-
-  const mainMenu = [
-    "Sản phẩm & Dịch vụ",
-    "Công cụ & Tiện ích",
-    "Liên hệ & Hỗ trợ",
-    "Giao dịch an toàn",
-  ];
-
-  const quickActions = [
-    { icon: "⭐", label: "Gợi ý sản phẩm" },
-    { icon: "🔔", label: "Tin nổi bật" },
-    { icon: "📝", label: "Đăng ký trực tuyến" },
-    { icon: "🎁", label: "VCB Loyalty" },
-    { icon: "🏷️", label: "Ưu đãi" },
-  ];
-
-  const LOGIN_REQUEST = "SSI_WALLET_LOGIN_REQUEST";
-  const LOGIN_SUCCESS = "SSI_WALLET_LOGIN_SUCCESS";
-  const LOGIN_FAILED = "SSI_WALLET_LOGIN_FAILED";
-  const API_NONCE = "https://sample-bank-api.onrender.com/auth/nonce";
-  const API_TOKEN = "https://sample-bank-api.onrender.com/auth/access-token";
 
   // Khi user bấm nút Đăng nhập trên web
   function handleLoginClick() {
     // Gửi message cho content-script của extension
-    console.log("[WEB] clicked login, sending postMessage");
     window.postMessage(
       {
         source: "sample-bank-web",
-        type: LOGIN_REQUEST,
+        type: WALLET_REQUEST_TYPE.LOGIN_REQUEST,
         payload: {
-          api_nonce: API_NONCE,
-          api_token: API_TOKEN,
+          api_nonce: APIS.API_NONCE,
+          api_token: APIS.API_TOKEN,
         },
       },
       "*"
@@ -57,14 +25,13 @@
       const data = event.data;
       if (!data || data.source !== "ssi-wallet") return;
 
-      if (data.type === LOGIN_SUCCESS) {
+      if (data.type === WALLET_REQUEST_TYPE.LOGIN_SUCCESS) {
         //accessToken = data.token;
         console.log("Login success from extension", data);
       }
-
-      if (data.type === LOGIN_FAILED) {
-        console.error("Login failed", data);
-        alert("Đăng nhập thất bại, vui lòng thử lại.");
+      else if (data.type === WALLET_REQUEST_TYPE.LOGIN_FAILED) {
+        console.error("Login failed from extension", data);
+        alert("Login failed from extension, please try again.");
       }
     };
 
@@ -76,20 +43,6 @@
 <svelte:head>
   <link rel="icon" href={favicon} />
 </svelte:head>
-
-<!-- <div class="app">
-  <header>
-    <h1>⭐ SvelteKit Sample</h1>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/about">About</a>
-    </nav>
-  </header>
-  <main>
-    {@render children?.()}
-  </main>
-  <footer>© {new Date().getFullYear()} Sample</footer>
-</div> -->
 
 <main class="page">
   <!-- HEADER -->
