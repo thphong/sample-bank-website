@@ -1,7 +1,22 @@
+<script lang="ts">
+  import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
+  import { IndexedDb } from "$lib/libs/indexed-db";
+
+  const dbInstance: IndexedDb = IndexedDb.getInstance();
+
+  onMount(async () => {
+    const token = await dbInstance.getValue<any>("access-token");
+    if (token) {
+      goto("/home");
+    }
+  });
+</script>
+
 <div class="hero-text">
   <div class="greeting-icon">🌤️</div>
   <div>
-    <h1>Chào buổi sáng</h1>
+    <h1>Xin chào,</h1>
     <p>Quý khách đang tìm kiếm gì hôm nay?</p>
   </div>
 </div>

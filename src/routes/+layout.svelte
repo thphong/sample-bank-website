@@ -1,16 +1,21 @@
 <script lang="ts">
+  import { IndexedDb } from "$lib/libs/indexed-db";
   import favicon from "$lib/assets/favicon.svg";
   import { onMount, onDestroy } from "svelte";
+  import { goto } from "$app/navigation";
+  import { writable } from "svelte/store";
   import {
     navTabs,
     topMenu,
     mainMenu,
-    quickActions,
     WALLET_REQUEST_TYPE,
     APIS,
     DID,
   } from "$lib/contant/enum";
   let { children } = $props();
+  const dbInstance: IndexedDb = IndexedDb.getInstance();
+  // svelte-ignore non_reactive_update
+  let hasValidSession = writable(false);
 
   // Khi user bấm nút Đăng nhập trên web
   function handleLoginClick() {
@@ -26,6 +31,12 @@
       },
       "*",
     );
+  }
+
+  async function handleLogoutClick() {
+    await dbInstance.saveValue("access-token", null);
+    hasValidSession.set(false);
+    goto("/");
   }
 
   // Khi user bấm nút Cấp VC trên web
@@ -45,14 +56,26 @@
     );
   }
 
+  async function init() {
+    const token = await dbInstance.getValue<any>("access-token");
+    console.log("token", token);
+    if (token) {
+      hasValidSession.set(true);
+    }
+  }
+
   onMount(() => {
-    const handler = (event: MessageEvent) => {
+    init();
+    const handler = async (event: MessageEvent) => {
       const data = event.data;
       if (!data || data.source !== "ssi-wallet") return;
 
       if (data.type === WALLET_REQUEST_TYPE.LOGIN_SUCCESS) {
         //accessToken = data.token;
         console.log("Login success from extension", data);
+        await dbInstance.saveValue("access-token", data.token);
+        hasValidSession.set(true);
+        goto("/home");
       } else if (data.type === WALLET_REQUEST_TYPE.LOGIN_FAILED) {
         console.error("Login failed from extension", data.error);
         alert("Login failed from extension, please try again.");
@@ -112,14 +135,22 @@
         {/each}
       </nav>
       <div class="group-btn">
+        {#if !$hasValidSession}
+          <!-- svelte-ignore event_directive_deprecated -->
+          <button class="action-btn login-btn" on:click={handleLoginClick}>
+            <span>Đăng nhập</span>
+          </button>
+        {/if}
         <!-- svelte-ignore event_directive_deprecated -->
-        <button class="login-btn" on:click={handleLoginClick}>
-          <span>Đăng nhập</span>
-        </button>
-        <!-- svelte-ignore event_directive_deprecated -->
-        <button class="login-btn vc-btn" on:click={handleIssueVCClick}>
+        <button class="action-btn vc-btn" on:click={handleIssueVCClick}>
           <span>Cấp VC</span>
         </button>
+        {#if $hasValidSession}
+          <!-- svelte-ignore event_directive_deprecated -->
+          <button class="action-btn logout-btn" on:click={handleLogoutClick}>
+            <span>Đăng xuất</span>
+          </button>
+        {/if}
       </div>
     </div>
   </header>
@@ -131,25 +162,7 @@
 
     <div class="hero-content">
       {@render children?.()}
-
-      <!-- Bottom white bar with quick actions -->
-      <div class="quick-actions">
-        {#each quickActions as qa}
-          <button class="quick-card">
-            <div class="qa-icon">{qa.icon}</div>
-            <div class="qa-label">{qa.label}</div>
-          </button>
-        {/each}
-      </div>
     </div>
-
-    <!-- Chat bot button -->
-    <button class="chatbot-btn" aria-label="Chat bot">
-      <div class="bot-face">
-        <span class="bot-eyes">• •</span>
-        <span class="bot-mouth">‿</span>
-      </div>
-    </button>
   </section>
 </main>
 
@@ -304,13 +317,12 @@
     color: #666;
   }
 
-  .login-btn {
+  .action-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
     border: none;
-    background: #c5e86c;
-    color: #1c1c1c;
+    color: white;
     padding: 0.5rem 1.1rem;
     border-radius: 999px;
     cursor: pointer;
@@ -320,8 +332,16 @@
     margin-left: 10px;
   }
 
+  .login-btn {
+    background: #c5e86c;
+  }
+
   .vc-btn {
     background: #f8851a;
+  }
+
+  .logout-btn {
+    background: #f02c1a;
   }
 
   /* HERO */
@@ -357,93 +377,10 @@
     z-index: 1;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2.5rem 1.25rem 3.5rem;
+    padding: 1.5rem 1.25rem 3.5rem;
     display: flex;
     flex-direction: column;
     min-height: 480px;
-  }
-
-  .quick-actions {
-    background: #ffffff;
-    border-radius: 32px 32px 0 0;
-    padding: 5px;
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0.75rem;
-    position: fixed;
-    width: 75%;
-    bottom: 20px;
-  }
-
-  .quick-card {
-    border: none;
-    background: transparent;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.6rem 0.25rem;
-    border-radius: 18px;
-    cursor: pointer;
-    transition:
-      background 0.2s,
-      transform 0.1s;
-  }
-
-  .quick-card:hover,
-  .main-menu-item:hover,
-  .top-menu a:hover,
-  .header-top .tabs button:hover {
-    background: #f3f7f0;
-    transform: translateY(-1px);
-  }
-
-  .qa-icon {
-    font-size: 1.4rem;
-  }
-
-  .qa-label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #333;
-    text-align: center;
-  }
-
-  .chatbot-btn {
-    position: absolute;
-    right: 1.5rem;
-    bottom: 1.75rem;
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    border: none;
-    background: #ffffff;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .bot-face {
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #00954c, #7ac143);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: #fff;
-    font-size: 0.75rem;
-  }
-
-  .bot-eyes {
-    font-size: 0.85rem;
-  }
-
-  .bot-mouth {
-    margin-top: -0.15rem;
   }
 
   /* RESPONSIVE */
@@ -462,27 +399,6 @@
       justify-content: center;
       flex-wrap: wrap;
       row-gap: 0.5rem;
-    }
-
-    .quick-actions {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-
-  @media (max-width: 640px) {
-    .quick-actions {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      border-radius: 24px 24px 0 0;
-    }
-
-    .chatbot-btn {
-      width: 54px;
-      height: 54px;
-    }
-
-    .bot-face {
-      width: 40px;
-      height: 40px;
     }
   }
 </style>
