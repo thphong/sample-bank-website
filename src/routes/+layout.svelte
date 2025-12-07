@@ -1,7 +1,15 @@
 <script lang="ts">
   import favicon from "$lib/assets/favicon.svg";
   import { onMount, onDestroy } from "svelte";
-  import {navTabs, topMenu, mainMenu, quickActions, WALLET_REQUEST_TYPE, APIS} from "$lib/contant/enum";
+  import {
+    navTabs,
+    topMenu,
+    mainMenu,
+    quickActions,
+    WALLET_REQUEST_TYPE,
+    APIS,
+    DID,
+  } from "$lib/contant/enum";
   let { children } = $props();
 
   // Khi user bấm nút Đăng nhập trên web
@@ -16,7 +24,24 @@
           api_token: APIS.API_TOKEN,
         },
       },
-      "*"
+      "*",
+    );
+  }
+
+  // Khi user bấm nút Cấp VC trên web
+  function handleIssueVCClick() {
+    // Gửi message cho content-script của extension
+    window.postMessage(
+      {
+        source: "sample-bank-web",
+        type: WALLET_REQUEST_TYPE.VC_REQUEST,
+        payload: {
+          issuer: DID,
+          api_vc_nonce: APIS.API_VC_NONCE,
+          api_vc_request: APIS.API_VC_ISSUE,
+        },
+      },
+      "*",
     );
   }
 
@@ -28,8 +53,7 @@
       if (data.type === WALLET_REQUEST_TYPE.LOGIN_SUCCESS) {
         //accessToken = data.token;
         console.log("Login success from extension", data);
-      }
-      else if (data.type === WALLET_REQUEST_TYPE.LOGIN_FAILED) {
+      } else if (data.type === WALLET_REQUEST_TYPE.LOGIN_FAILED) {
         console.error("Login failed from extension", data.error);
         alert("Login failed from extension, please try again.");
       }
@@ -87,12 +111,16 @@
           </div>
         {/each}
       </nav>
-
-      <!-- svelte-ignore event_directive_deprecated -->
-      <button class="login-btn" on:click={handleLoginClick}>
-        <span class="login-icon">⮕</span>
-        <span>Đăng nhập</span>
-      </button>
+      <div class="group-btn">
+        <!-- svelte-ignore event_directive_deprecated -->
+        <button class="login-btn" on:click={handleLoginClick}>
+          <span>Đăng nhập</span>
+        </button>
+        <!-- svelte-ignore event_directive_deprecated -->
+        <button class="login-btn vc-btn" on:click={handleIssueVCClick}>
+          <span>Cấp VC</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -289,11 +317,11 @@
     font-weight: 600;
     font-size: 0.95rem;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    margin-left: 10px;
   }
 
-  .login-icon {
-    display: inline-flex;
-    transform: rotate(180deg);
+  .vc-btn {
+    background: #f8851a;
   }
 
   /* HERO */
