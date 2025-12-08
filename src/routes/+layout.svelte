@@ -9,7 +9,6 @@
     topMenu,
     mainMenu,
     WALLET_REQUEST_TYPE,
-    APIS,
     DID,
   } from "$lib/contant/enum";
   let { children } = $props();
@@ -25,8 +24,7 @@
         source: "sample-bank-web",
         type: WALLET_REQUEST_TYPE.LOGIN_REQUEST,
         payload: {
-          api_nonce: APIS.API_NONCE,
-          api_token: APIS.API_TOKEN,
+          issuer: DID,
         },
       },
       "*",
@@ -48,8 +46,6 @@
         type: WALLET_REQUEST_TYPE.VC_REQUEST,
         payload: {
           issuer: DID,
-          api_vc_nonce: APIS.API_VC_NONCE,
-          api_vc_request: APIS.API_VC_ISSUE,
         },
       },
       "*",
