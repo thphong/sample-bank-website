@@ -34,10 +34,6 @@ export const WALLET_REQUEST_TYPE = {
 const HOST = 'https://sample-bank-api.onrender.com';
 
 export const APIS = {
-    API_NONCE: `${HOST}/auth/nonce`,
-    API_TOKEN: `${HOST}/auth/access-token`,
-    API_VC_NONCE: `${HOST}/vc/nonce`,
-    API_VC_ISSUE: `${HOST}/vc/request`,
     API_GET_BANK_ACCOUNT: `${HOST}/resource/me`
 }
 
