@@ -41,4 +41,4 @@ export const APIS = {
     API_GET_BANK_ACCOUNT: `${HOST}/resource/me`
 }
 
-export const DID = 'did:iota:testnet:0x617bcfdd187a90ca167a625c9ace4d4aefa8d4b644fc9ae0711d548c1cb29f4e'
+export const DID = 'did:iota:testnet:0x5e09e3061df51cfa2bcfd6ec250b13fe311a3a5ca42a097409ca5ed9cda67a0e'
